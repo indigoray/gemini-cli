@@ -1,0 +1,471 @@
+---
+description: Gemini CLI를 Gemini Writer CLI로 전환하기 위한 구체적인 프롬프트 및 시스템 수정 계획
+alwaysApply: false
+---
+
+# Gemini CLI → Gemini Writer CLI 프롬프트 수정 계획 v2.0
+
+## 🎯 목표
+
+Gemini CLI를 **오픈소스 작가 에이전트 제품군**으로 변환하기 위한 체계적인 프롬프트 및 시스템 수정 계획입니다. 본 계획은 다음 세 가지 모드를 지원합니다:
+
+1. **전문 작가 모드** (pro-writer): 전문 작가의 집필 워크플로우 지원
+2. **대필/공동집필 모드** (ghostwriter): 일반인의 대필 및 공동 집필 보조
+3. **자동 소설 생성 모드** (novel-auto): 세계관 기반 자동 창작
+
+## 📋 변경 개요
+
+### Phase 1: 핵심 프롬프트 수정 (우선순위: 최고)
+
+**파일**: `packages/core/src/core/prompts.ts`
+
+#### 1.1 다중 페르소나 시스템
+
+**모드별 페르소나 정의**:
+
+**전문 작가 모드 (pro-writer)**:
+- **Literary Expert**: 문학 이론과 실무 경험을 갖춘 전문가
+- **Research Specialist**: 체계적인 자료 조사와 팩트체크 전문가
+- **Style Editor**: 문체와 톤의 일관성을 유지하는 편집 전문가
+- **Publishing Consultant**: 출판 프로세스와 포맷 전문가
+
+**대필/공동집필 모드 (ghostwriter)**:
+- **Voice Analyst**: 클라이언트의 목소리와 스타일을 분석/모방하는 전문가
+- **Interview Facilitator**: 효과적인 인터뷰를 통해 아이디어를 추출하는 전문가
+- **Collaborative Writer**: 공동 작업에 특화된 글쓰기 파트너
+- **Content Protector**: 민감한 내용과 저작권을 관리하는 전문가
+
+**자동 소설 생성 모드 (novel-auto)**:
+- **World Builder**: 세계관 구축과 설정 관리 전문가
+- **Continuity Keeper**: 스토리 연속성과 일관성 유지 전문가
+- **Character Developer**: 캐릭터 개발과 아크 관리 전문가
+- **Plot Architect**: 복잡한 플롯 구조 설계 전문가
+
+#### 1.2 핵심 워크플로우 용어 변경
+
+|---|---|---|
+| **코딩 용어** | **글쓰기 용어** | **적용 범위** |
+|---|---|---|
+| Refactor | Revise/Edit (수정/편집) | 모든 모드 |
+| Debug | Proofread/Correct (교정) | 모든 모드 |
+| Build | Compose/Draft (작성/초안) | 모든 모드 |
+| Test | Review/Validate (검토/검증) | 모든 모드 |
+| Deploy | Publish/Export (출판/내보내기) | 모든 모드 |
+| Repository | Manuscript/Project (원고/프로젝트) | 모든 모드 |
+| Function | Scene/Chapter (씬/챕터) | pro-writer, novel-auto |
+| Variable | Character/Entity (인물/개체) | novel-auto |
+| Import | Citation/Reference (인용/참조) | pro-writer, ghostwriter |
+| Error | Inconsistency/Issue (불일치/문제) | 모든 모드 |
+| Class | Character Class/Archetype (캐릭터 유형/원형) | novel-auto |
+| Module | Part/Section (부/섹션) | pro-writer |
+| API | Style Guide/Template (스타일 가이드/템플릿) | 모든 모드 |
+| Framework | Genre Convention (장르 관습) | 모든 모드 |
+| Library | Reference Material (참고 자료) | pro-writer |
+
+**모드별 프롬프트 예시**:
+```typescript
+// Pro-writer Mode
+"I'll help you revise this chapter to enhance its narrative flow and maintain stylistic consistency"
+
+// Ghostwriter Mode  
+"I'll help you capture your unique voice while structuring your ideas into a compelling narrative"
+
+// Novel-auto Mode
+"I'll help you expand this world setting while maintaining continuity with established lore"
+```
+
+#### 1.3 모드별 워크플로우 정의
+
+**전문 작가 모드 (pro-writer) 워크플로우**:
+1. **프로젝트 설정**: 장르, 톤, 독자, 서지 스타일, 금칙어 설정
+2. **리서치**: 키워드/질문 → 웹/문헌 검색 → 노트 → 각주/서지 초안
+3. **플롯 & 아웃라인**: 비트시트 선택/수정, 장/씬 트리 생성
+4. **초안 작성**: 씬 단위 작성, 인용 자동 삽입
+5. **개정 패스**: 논리성/사실성/스타일/리듬 4패스 자동 제안
+6. **감수/리뷰**: diff 기반 변경 이력, 체크리스트
+7. **출판물 내보내기**: PDF/EPUB 목차/각주/서지 포함
+
+**대필/공동집필 모드 (ghostwriter) 워크플로우**:
+1. **목소리 학습**: 사용자 글 샘플 3-5개 업로드 → 톤 프로필 생성
+2. **인터뷰 플로우**: 질문 트리로 내용 추출(목적, 독자, 핵심 메시지)
+3. **초안 생성**: 사용자 톤 + 구조 템플릿 반영
+4. **피드백 라운드**: 체크박스/간단 지시 → 개정
+5. **표현 안전장치**: 민감주제/표현 가드, 사실 검증
+6. **내보내기/공유**: PDF/Docx/블로그 포맷
+
+**자동 소설 생성 모드 (novel-auto) 워크플로우**:
+1. **자료 투입**: 원작/위키/설정집 텍스트 업로드
+2. **세계관 파싱**: 엔티티/관계 추출 → 그래프/타임라인 구성
+3. **프롬프트 설계**: 장르/톤/금기/룰(마법/기술) 명시
+4. **스토리 생성**: 에피소드/장편 플롯 생성
+5. **연속성 유지**: 각 씬마다 KG 검증, 설정 충돌 시 수정 제안
+6. **시리즈화**: 캐릭터 아크 누적, 스핀오프 브랜칭
+
+#### 1.4 에이전트 역할 분리
+
+**코어 에이전트 역할**:
+- **Planner**: 전체 프로젝트 계획 및 진행 관리
+- **Researcher**: 정보 수집, 팩트체크, 인용 관리
+- **Writer**: 실제 텍스트 생성 및 작성
+- **Editor/Critic**: 검토, 개정 제안, 스타일 체크
+- **ContinuityKeeper**: 설정/연속성 관리 (novel-auto 전용)
+- **Publisher**: 포맷팅, 내보내기, 메타데이터 관리
+
+### Phase 2: GEMINI.md 개발 가이드라인 수정
+
+**파일**: `GEMINI.md`
+
+#### 2.1 모드별 가이드라인 추가
+
+**전문 작가 모드 가이드라인**:
+- **장르별 컨벤션**: 소설, 논픽션, 학술, 기술 문서 등
+- **서지 관리**: APA/MLA/Chicago 스타일 가이드
+- **구조화 방법론**: 3막/4막, Save the Cat, Hero's Journey
+- **팩트체크 프로토콜**: 출처 검증 및 인용 관리
+- **버전 관리**: Git 기반 원고 이력 관리
+
+**대필/공동집필 모드 가이드라인**:
+- **목소리 분석**: 톤, 스타일, 어휘 패턴 분석 방법
+- **인터뷰 기법**: 효과적인 정보 추출 방법
+- **윤리 가이드**: 저작권, 개인정보, 민감 주제 처리
+- **협업 프로토콜**: 피드백 수렴 및 반영 방법
+
+**자동 소설 생성 모드 가이드라인**:
+- **세계관 구축**: 온톨로지 기반 설정 관리
+- **캐릭터 개발**: 아크, 관계도, 상태 추적
+- **연속성 관리**: 타임라인, 지리, 룰 체크
+- **장르 템플릿**: 판타지, SF, 미스터리 등
+
+#### 2.2 프로젝트 구조 표준화
+
+**표준 프로젝트 구조**:
+```
+/project
+ ├─ /manuscript        # 원고(장/씬별 MD)
+ ├─ /notes             # 리서치 노트/하이라이트
+ ├─ /world             # 세계관 그래프/캐릭터 바이블(JSON/GraphML)
+ ├─ /refs              # 서지(BibTeX/CSL JSON)
+ ├─ /exports           # PDF/EPUB/Docx 산출물
+ ├─ /templates         # 사용자 정의 템플릿
+ ├─ /style             # 스타일 가이드/프로필
+ └─ project.yaml       # 프로젝트 메타데이터
+```
+
+### Phase 3: 글쓰기 특화 도구 추가 계획
+
+#### 3.1 기존 도구 활용법 재정의
+
+**기본 파일 도구들의 글쓰기 용도**:
+- `ReadFileTool`: 원고, 참고 자료, 템플릿 읽기
+- `WriteFileTool`: 새 챕터/씬 작성, 노트 생성
+- `EditTool`: 원고 수정, 개정, 교정
+- `GrepTool`: 특정 캐릭터/설정 검색, 일관성 체크
+- `GlobTool`: 프로젝트 내 관련 문서 탐색
+- `GitTool`: 원고 버전 관리, 변경 이력 추적
+
+#### 3.2 모드별 특화 도구 개발 계획
+
+**전문 작가 모드 도구**:
+- **ResearchTool**: 웹/문헌 검색, 노트 수집, 하이라이트
+- **CitationBuilder**: CSL 기반 각주/참고문헌 자동 생성
+- **FactChecker**: 주장/숫자 자동 검증, 의심 스니펫 플래깅
+- **StyleGuard**: 장르별 스타일 가이드 준수 체크
+- **PlotAnalyzer**: 플롯 구조 분석 및 페이싱 체크
+
+**대필/공동집필 모드 도구**:
+- **VoiceAnalyzer**: 샘플 텍스트 기반 톤/스타일 프로필 생성
+- **InterviewBot**: 대화형 콘텐츠 추출 도구
+- **SafetyFilter**: 민감 주제/표현 감지 및 대체 제안
+- **CollaborationTracker**: 피드백 관리 및 변경 추적
+
+**자동 소설 생성 모드 도구**:
+- **WorldParser**: 텍스트에서 세계관 요소 추출
+- **ContinuityEngine**: 설정 충돌 탐지 및 해결
+- **CharacterBible**: 캐릭터 프로필/관계도/아크 관리
+- **PlotGenerator**: 템플릿 기반 플롯 생성기
+- **TimelineKeeper**: 사건 시간순 정렬 및 모순 체크
+
+#### 3.3 MCP(Model Context Protocol) 도구 통합
+
+**기존 MCP 도구 활용**:
+- Google Search → 리서치 및 팩트체크
+- Memory Tool → 캐릭터/설정 장기 기억
+- Browser Tool → 온라인 자료 수집
+
+**새로운 MCP 도구 개발**:
+- **Bibliography MCP**: 서지 관리 서비스 연동
+- **Grammar MCP**: 문법/맞춤법 검사 서비스
+- **Translation MCP**: 다국어 번역 서비스
+
+### Phase 4: 예제 및 템플릿 업데이트
+
+#### 4.1 모드별 프롬프트 예제
+
+**전문 작가 모드 예제**:
+```
+user: Create an outline for a mystery novel using the three-act structure
+user: Research recent developments in quantum computing for my sci-fi novel
+user: Check all citations in chapter 3 against Chicago style guide
+user: Analyze the pacing of my action sequences in scenes 5-8
+user: Generate a synopsis for literary agents (250 words)
+```
+
+**대필/공동집필 모드 예제**:
+```
+user: Here are 3 blog posts I wrote. Learn my style and help me write a new one
+user: Interview me about my startup journey and create a founder story
+user: Transform my technical notes into a user-friendly guide
+user: Help me write a speech for my daughter's wedding in my voice
+```
+
+**자동 소설 생성 모드 예제**:
+```
+user: Parse this fantasy wiki and build a world knowledge graph
+user: Generate a side quest that fits the established magic system
+user: Create a new character that would conflict with the protagonist
+user: Write the next chapter maintaining continuity with the timeline
+user: Check for any lore contradictions in this new plot development
+```
+
+#### 4.2 CLI 명령어 예제
+
+**전문 작가 모드**:
+```bash
+$ writer init "Murder at the Library" --mode pro-writer --genre mystery
+$ writer research "Victorian era poisons" --save notes/poisons.md --cite
+$ writer plot create --template three-act --beats 15
+$ writer scene draft 2-3 --pov third-limited --tone suspenseful
+$ writer revise 2-3 --pass logic,style --suggest
+$ writer export --format epub --style chicago --cover cover.jpg
+```
+
+**대필/공동집필 모드**:
+```bash
+$ writer init "My Journey" --mode ghostwriter
+$ writer voice learn --samples blog/*.md --profile client-voice.json
+$ writer interview start --topics "career,challenges,lessons"
+$ writer draft --voice client-voice.json --tone inspirational
+$ writer safety check --filter sensitive-topics.yaml
+```
+
+**자동 소설 생성 모드**:
+```bash
+$ writer init "Eldoria Chronicles" --mode novel-auto
+$ writer world import --source wiki/*.md --format markdown
+$ writer world validate --check continuity,timeline
+$ writer character new --archetype mentor --align protag
+$ writer story generate --type side-quest --length 5000
+$ writer series plan --books 3 --arcs "hero,redemption,legacy"
+```
+
+### Phase 5: 환경변수 및 설정 확장
+
+#### 5.1 모드별 환경변수
+
+**기본 환경변수**:
+- `GEMINI_WRITER_MODE`: 기본 모드 (pro-writer|ghostwriter|novel-auto)
+- `GEMINI_WRITER_LANG`: 기본 언어 설정
+- `GEMINI_WRITER_SAFETY`: 안전 필터 레벨 (strict|moderate|minimal)
+
+**전문 작가 모드 환경변수**:
+- `GEMINI_PRO_STYLE_GUIDE`: 기본 스타일 가이드 (chicago|apa|mla)
+- `GEMINI_PRO_GENRE`: 기본 장르
+- `GEMINI_PRO_CITE_FORMAT`: 인용 형식
+- `GEMINI_PRO_FACT_CHECK`: 팩트체크 활성화
+
+**대필 모드 환경변수**:
+- `GEMINI_GHOST_INTERVIEW`: 인터뷰 깊이 (basic|detailed|comprehensive)
+- `GEMINI_GHOST_VOICE_SAMPLES`: 최소 샘플 수
+- `GEMINI_GHOST_SAFETY_FILTER`: 민감 주제 필터 설정
+
+**자동 소설 모드 환경변수**:
+- `GEMINI_AUTO_WORLD_FORMAT`: 세계관 저장 형식 (json|graphml)
+- `GEMINI_AUTO_CONTINUITY`: 연속성 체크 레벨
+- `GEMINI_AUTO_GENERATION_LIMIT`: 자동 생성 길이 제한
+
+#### 5.2 프로젝트 설정 파일 (project.yaml)
+
+```yaml
+project:
+  name: "Winter Literary Experiment"
+  mode: pro-writer  # pro-writer | ghostwriter | novel-auto
+  version: "0.1.0"
+  
+# 모드별 설정
+pro_writer:
+  genre: literary_fiction
+  audience: adult
+  style_guide: chicago
+  word_count_target: 80000
+  language: ko
+  
+ghostwriter:
+  voice_profile: "client-voice.json"
+  interview_depth: comprehensive
+  safety_filters:
+    - political_sensitivity
+    - personal_information
+    
+novel_auto:
+  world:
+    format: graphml
+    continuity_check: strict
+  characters:
+    max_active: 20
+    track_arcs: true
+  generation:
+    max_length: 10000
+    creativity: 0.8
+
+# 공통 설정
+common:
+  red_flags: 
+    - "차별적 표현"
+    - "과도한 폭력 묘사"
+  export:
+    formats: [pdf, epub, docx]
+    templates:
+      pdf: "templates/classic.tex"
+      epub: "templates/standard.css"
+  version_control:
+    auto_commit: true
+    commit_message_format: "[{mode}] {action}: {summary}"
+```
+
+#### 5.3 레시피 설정 (recipes/)
+
+**recipes/pro-writer.yaml**:
+```yaml
+name: "Professional Writer Assistant"
+agents:
+  - planner:
+      prompts: "prompts/pro/planner.md"
+      tools: [research, outline, timeline]
+  - researcher:
+      prompts: "prompts/pro/researcher.md"
+      tools: [web_search, citation_builder, fact_checker]
+  - writer:
+      prompts: "prompts/pro/writer.md"
+      tools: [draft, style_guard]
+  - editor:
+      prompts: "prompts/pro/editor.md"
+      tools: [revise, grammar_check, consistency]
+```
+
+## 🚀 구현 로드맵 (6개월)
+
+### M1 (주 1-4): 코어/CLI 스캐폴딩
+- [ ] Gemini CLI 레포 포크 및 기본 구조 설정
+- [ ] 플러그인/레시피 시스템 구축
+- [ ] 기본 명령어 구현 (`init`, `draft`, `export`)
+- [ ] 모드 전환 시스템 구현
+- [ ] `prompts.ts` 다중 페르소나 시스템 구현
+
+### M2 (주 5-8): 리서치·인용 파이프라인
+- [ ] 웹 검색 + 하이라이트 도구 구현
+- [ ] 각주/서지 자동화 (CSL 기반)
+- [ ] 팩트체커 v1 구현
+- [ ] 노트 관리 시스템
+- [ ] MCP 도구 통합 (Google Search 등)
+
+### M3 (주 9-12): 플롯/아웃라인·씬 라이터
+- [ ] 템플릿 세트 구현 (3막, Save the Cat 등)
+- [ ] 장/씬 메타데이터 시스템
+- [ ] 개정 패스 (4단계: 논리/사실/스타일/리듬)
+- [ ] 프로젝트 구조 표준화
+- [ ] Git 기반 버전 관리 통합
+
+### M4 (주 13-16): 세계관·연속성 엔진
+- [ ] KG(Knowledge Graph) 구축/검증 시스템
+- [ ] 캐릭터 바이블 구현
+- [ ] 타임라인 체커
+- [ ] 온톨로지 기반 설정 관리
+- [ ] 연속성 검증 엔진
+
+### M5 (주 17-20): 대필 인터뷰 흐름 & 톤 프로파일러
+- [ ] 사용자 샘플 학습 시스템
+- [ ] 인터뷰 봇 구현
+- [ ] 금칙 필터 및 안전장치
+- [ ] 톤/스타일 프로필 생성기
+- [ ] 협업 추적 시스템
+
+### M6 (주 21-24): 내보내기/출판 & 베타
+- [ ] PDF/EPUB 템플릿 시스템
+- [ ] Pandoc/Typst 통합
+- [ ] 공개 베타 출시
+- [ ] 커뮤니티 레시피 마켓 구축
+- [ ] 문서화 및 튜토리얼 제작
+
+## 📝 주의사항 및 리스크 관리
+
+### 기술적 고려사항
+- **모듈성**: 각 모드는 독립적으로 작동 가능해야 함
+- **확장성**: 새로운 장르/스타일 추가가 용이해야 함
+- **성능**: 대용량 원고(100만 단어+) 처리 최적화
+- **메모리**: 장/씬 단위 컨텍스트 윈도우 관리
+
+### 윤리적/법적 고려사항
+- **저작권**: CC/퍼블릭도메인 구분, 직접 복제 방지
+- **표절 검사**: 로컬 유사도 체크 + 웹 검증 옵션
+- **개인정보**: PII 필터링, 민감 주제 경고
+- **안전장치**: 금칙어/가드레일 룰셋 적용
+
+### 사용자 경험 고려사항
+- **진입 장벽**: CLI 초보자를 위한 상세 문서
+- **다국어 지원**: 한국어 우선, 영어/일본어 확장
+- **오프라인 지원**: 핵심 기능은 오프라인 작동
+- **백업/복구**: 자동 저장 및 복구 시스템
+
+### 커뮤니티 전략
+- **오픈소스**: MIT/Apache 2.0 라이선스
+- **기여 가이드**: 명확한 기여 가이드라인
+- **레시피 공유**: 커뮤니티 레시피 마켓플레이스
+- **피드백 채널**: Discord/GitHub Discussions
+
+## 🎨 기대 효과 및 성공 지표
+
+### 기대 효과
+
+**전문 작가에게**:
+- 리서치에서 출판까지 통합 워크플로우
+- 자동 인용/서지 관리로 시간 절약
+- Git 기반 버전 관리로 안전한 원고 관리
+- 장르별 최적화된 글쓰기 지원
+
+**일반 사용자에게**:
+- 전문가 수준의 글쓰기 도구 접근성
+- AI 기반 개인화된 글쓰기 코칭
+- 안전하고 윤리적인 콘텐츠 생성
+- 다양한 포맷으로 손쉬운 출판
+
+**창작 커뮤니티에**:
+- 오픈소스 글쓰기 도구 생태계 확장
+- 레시피/템플릿 공유를 통한 집단 지성
+- AI와 인간의 협업 모델 제시
+- 새로운 창작 패러다임 개척
+
+### 성공 지표
+
+**정량적 지표**:
+- 월간 활성 사용자 수 (MAU)
+- 생성된 원고 수 및 총 단어 수
+- 커뮤니티 레시피 기여 수
+- 출판된 작품 수
+
+**정성적 지표**:
+- 사용자 만족도 (NPS)
+- 글쓰기 품질 향상도
+- 커뮤니티 활성도
+- 미디어/업계 반응
+
+**기술적 지표**:
+- 응답 시간 및 처리 속도
+- 메모리 사용 효율성
+- 플러그인/레시피 확장성
+- 버그 리포트 및 해결률
+
+## 🌟 비전
+
+이 프로젝트가 성공적으로 구현되면, **"작가와 AI가 협력하는 새로운 집필 패러다임"**을 열어 창작자, 출판사, 그리고 독자 모두에게 가치 있는 생태계를 제공할 것입니다.
+
+Gemini Writer CLI는 단순한 도구를 넘어, 글쓰기의 민주화와 창의성 증진을 위한 플랫폼으로 자리매김할 것입니다.
