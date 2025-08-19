@@ -34,9 +34,3 @@ Gemini Writer CLI를 통해 다음과 같은 작업을 수행할 수 있습니�
 
 ---
 
-## 원본 Gemini CLI 정보
-
-> 아래는 원본 Gemini CLI의 문서입니다. 기본적인 설치 및 사용법은 동일하게 적용됩니다.
-
-This repository contains the Gemini CLI, a command-line AI workflow tool that connects to your
-tools, understands your code and accelerates your workflows.
