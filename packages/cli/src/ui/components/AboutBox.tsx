@@ -14,6 +14,9 @@ interface AboutBoxProps {
   osVersion: string;
   sandboxEnv: string;
   modelVersion: string;
+  selectedAuthType: string;
+  gcpProject: string;
+  ideClient: string;
 }
 
 export const AboutBox: React.FC<AboutBoxProps> = ({
@@ -21,6 +24,9 @@ export const AboutBox: React.FC<AboutBoxProps> = ({
   osVersion,
   sandboxEnv,
   modelVersion,
+  selectedAuthType,
+  gcpProject,
+  ideClient,
 }) => (
   <Box
     borderStyle="round"
@@ -87,5 +93,41 @@ export const AboutBox: React.FC<AboutBoxProps> = ({
         <Text>{osVersion}</Text>
       </Box>
     </Box>
+    <Box flexDirection="row">
+      <Box width="35%">
+        <Text bold color={Colors.LightBlue}>
+          Auth Method
+        </Text>
+      </Box>
+      <Box>
+        <Text>
+          {selectedAuthType.startsWith('oauth') ? 'OAuth' : selectedAuthType}
+        </Text>
+      </Box>
+    </Box>
+    {gcpProject && (
+      <Box flexDirection="row">
+        <Box width="35%">
+          <Text bold color={Colors.LightBlue}>
+            GCP Project
+          </Text>
+        </Box>
+        <Box>
+          <Text>{gcpProject}</Text>
+        </Box>
+      </Box>
+    )}
+    {ideClient && (
+      <Box flexDirection="row">
+        <Box width="35%">
+          <Text bold color={Colors.LightBlue}>
+            IDE Client
+          </Text>
+        </Box>
+        <Box>
+          <Text>{ideClient}</Text>
+        </Box>
+      </Box>
+    )}
   </Box>
 );

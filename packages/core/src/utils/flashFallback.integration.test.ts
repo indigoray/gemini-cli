@@ -6,6 +6,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Config } from '../config/config.js';
+import fs from 'node:fs';
 import {
   setSimulate429,
   disableSimulationAfterFallback,
@@ -17,10 +18,16 @@ import { DEFAULT_GEMINI_FLASH_MODEL } from '../config/models.js';
 import { retryWithBackoff } from './retry.js';
 import { AuthType } from '../core/contentGenerator.js';
 
+vi.mock('node:fs');
+
 describe('Flash Fallback Integration', () => {
   let config: Config;
 
   beforeEach(() => {
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    vi.mocked(fs.statSync).mockReturnValue({
+      isDirectory: () => true,
+    } as fs.Stats);
     config = new Config({
       sessionId: 'test-session',
       targetDir: '/test',
@@ -50,14 +57,13 @@ describe('Flash Fallback Integration', () => {
     expect(result).toBe(true);
   });
 
-  it('should trigger fallback after 3 consecutive 429 errors for OAuth users', async () => {
+  it('should trigger fallback after 2 consecutive 429 errors for OAuth users', async () => {
     let fallbackCalled = false;
     let fallbackModel = '';
 
-    // Mock function that simulates exactly 3 429 errors, then succeeds after fallback
+    // Mock function that simulates exactly 2 429 errors, then succeeds after fallback
     const mockApiCall = vi
       .fn()
-      .mockRejectedValueOnce(createSimulated429Error())
       .mockRejectedValueOnce(createSimulated429Error())
       .mockRejectedValueOnce(createSimulated429Error())
       .mockResolvedValueOnce('success after fallback');
@@ -69,9 +75,9 @@ describe('Flash Fallback Integration', () => {
       return fallbackModel;
     });
 
-    // Test with OAuth personal auth type, with maxAttempts = 3 to ensure fallback triggers
+    // Test with OAuth personal auth type, with maxAttempts = 2 to ensure fallback triggers
     const result = await retryWithBackoff(mockApiCall, {
-      maxAttempts: 3,
+      maxAttempts: 2,
       initialDelayMs: 1,
       maxDelayMs: 10,
       shouldRetry: (error: Error) => {
@@ -79,18 +85,19 @@ describe('Flash Fallback Integration', () => {
         return status === 429;
       },
       onPersistent429: mockFallbackHandler,
-      authType: AuthType.LOGIN_WITH_GOOGLE_PERSONAL,
+      authType: AuthType.LOGIN_WITH_GOOGLE,
     });
 
     // Verify fallback was triggered
     expect(fallbackCalled).toBe(true);
     expect(fallbackModel).toBe(DEFAULT_GEMINI_FLASH_MODEL);
     expect(mockFallbackHandler).toHaveBeenCalledWith(
-      AuthType.LOGIN_WITH_GOOGLE_PERSONAL,
+      AuthType.LOGIN_WITH_GOOGLE,
+      expect.any(Error),
     );
     expect(result).toBe('success after fallback');
-    // Should have: 3 failures, then fallback triggered, then 1 success after retry reset
-    expect(mockApiCall).toHaveBeenCalledTimes(4);
+    // Should have: 2 failures, then fallback triggered, then 1 success after retry reset
+    expect(mockApiCall).toHaveBeenCalledTimes(3);
   });
 
   it('should not trigger fallback for API key users', async () => {
