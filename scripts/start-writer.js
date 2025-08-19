@@ -59,7 +59,8 @@ try {
   // ignore
 }
 
-if (process.env.DEBUG && !sandboxCommand) {
+// DEBUG 환경변수는 로깅용으로만 사용, 디버거는 별도 플래그로 제어
+if (process.env.DEBUG_INSPECT && !sandboxCommand) {
   if (process.env.SANDBOX) {
     const port = process.env.DEBUG_PORT || '9229';
     nodeArgs.push(`--inspect-brk=0.0.0.0:${port}`);
