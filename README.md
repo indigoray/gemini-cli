@@ -1,8 +1,42 @@
-# Gemini CLI
+# Gemini Writer CLI
 
 [![Gemini CLI CI](https://github.com/google-gemini/gemini-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/google-gemini/gemini-cli/actions/workflows/ci.yml)
 
 ![Gemini CLI Screenshot](./docs/assets/gemini-screenshot.png)
+
+**Gemini Writer CLI**는 작가와 글쓰기 전문가를 위한 AI 기반 커맨드라인 도구입니다. 이 프로젝트는 Google의 Gemini CLI를 기반으로 하여, 코딩 중심에서 글쓰기 중심으로 특화된 AI 어시스턴트로 발전시킨 포크 프로젝트입니다.
+
+## 프로젝트 개요
+
+Gemini Writer CLI는 다음과 같은 철학으로 개발되었습니다:
+
+- **코딩과 글쓰기의 공통점**: 두 작업 모두 체계적인 사고, 구조화, 그리고 반복적인 개선 과정을 필요로 합니다.
+- **기존 도구의 활용**: Gemini CLI의 강력한 기본 기능을 유지하면서, 글쓰기에 특화된 기능을 추가했습니다.
+- **전문적인 글쓰기 지원**: 단순한 텍스트 생성을 넘어서, 전문적인 글쓰기 워크플로우를 지원합니다.
+
+## 주요 기능
+
+Gemini Writer CLI를 통해 다음과 같은 작업을 수행할 수 있습니다:
+
+- **대용량 텍스트 분석 및 편집**: Gemini의 1M 토큰 컨텍스트 윈도우를 활용하여 긴 문서나 여러 문서를 동시에 처리
+- **다양한 글쓰기 장르 지원**: 소설, 에세이, 기술 문서, 학술 논문, 비즈니스 문서 등 다양한 형태의 글쓰기 지원
+- **구조화된 글쓰기 워크플로우**: 기획 → 아웃라인 → 초안 → 수정 → 완성의 체계적인 글쓰기 과정 가이드
+- **스타일 일관성 유지**: 기존 작품의 문체와 톤을 분석하여 일관된 스타일로 글쓰기 지원
+- **연구 및 팩트체크**: Google Search 도구를 활용한 실시간 정보 검색 및 검증
+- **다국어 글쓰기**: 번역, 현지화, 다언어 콘텐츠 제작 지원
+
+## 기존 Gemini CLI와의 차이점
+
+- **전문 작가 페르소나**: 글쓰기 전문가의 관점에서 조언하고 작업을 수행
+- **글쓰기 특화 프롬프트**: 창작, 편집, 교정에 특화된 시스템 프롬프트와 지침
+- **글쓰기 워크플로우**: 체계적인 글쓰기 과정을 지원하는 단계별 가이드
+- **글쓰기 도구**: 문체 분석, 가독성 검사, 구조 개선 등 글쓰기에 특화된 추가 도구
+
+---
+
+## 원본 Gemini CLI 정보
+
+> 아래는 원본 Gemini CLI의 문서입니다. 기본적인 설치 및 사용법은 동일하게 적용됩니다.
 
 This repository contains the Gemini CLI, a command-line AI workflow tool that connects to your
 tools, understands your code and accelerates your workflows.
